@@ -9,6 +9,7 @@
 #define COLOR_GRID 0x1f1f1f1f // grid color
 #define COLOR_WHITE 0xffffffff // Snake color
 #define COLOR_APPLE 0xFFFF0000 // fruit color
+#define COLOR_BLACK 0x00000000 //black color
 #define LINE_WIDTH 2
 
 #define SNAKE(x,y) fill_cell(psurface,x,y,COLOR_WHITE)  // for snake
@@ -75,10 +76,9 @@ int main(){
     SDL_Event event;
 
     struct SnakeElement snake = {8,5,NULL};
-    {
-        /* data */
-    };
-    
+
+    SDL_Rect override_rect = {0, 0, WIDTH, HEIGHT}; // it is for like if snake moves from one block to next then previous should get back to normal grid 
+
     //  writing game loop
     int game = 1;
   
@@ -108,7 +108,7 @@ int main(){
             }
         }
 
-        
+        SDL_FillSurfaceRect(psurface,&override_rect,COLOR_BLACK); //
         draw_snake(psurface, &snake);
         
         APPLE(apple_x, apple_y);

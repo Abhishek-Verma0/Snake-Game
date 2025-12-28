@@ -28,6 +28,12 @@ struct SnakeElement
     struct SnakeElement *pnext;
 };
 
+struct Direction
+{ // only one value should be !=0 at one time so one dirxn movement can be done
+    int dx,dy;
+};
+
+
 //  funciton for the drawing grid
 int draw_grid(SDL_Surface *psurface){
     //  making horizontal line for the gird 
@@ -65,6 +71,11 @@ void draw_snake(SDL_Surface *psurface,struct SnakeElement *psnake){
 
 }
 
+void move_snake(struct SnakeElement *psnake,struct Direction *pdirection){
+    psnake->x += pdirection->dx;
+    psnake->y += pdirection->dy;
+}
+
 int main(){
     printf("Hello Snake\n");
 
@@ -76,6 +87,9 @@ int main(){
     SDL_Event event;
 
     struct SnakeElement snake = {8,5,NULL};
+    struct SnakeElement *psnake = &snake; //pointer to snake
+    struct Direction direction = {0, 0};
+    struct Direction *pdirection = &direction; //pointer to directon
 
     SDL_Rect override_rect = {0, 0, WIDTH, HEIGHT}; // it is for like if snake moves from one block to next then previous should get back to normal grid 
 
@@ -85,36 +99,43 @@ int main(){
     int apple_x = 10;
     int apple_y = 14;
     while(game){
-
+       
         while(SDL_PollEvent(&event)){
             if(event.type== SDL_EVENT_QUIT){
                 game = 0;
             }
             if(event.type==SDL_EVENT_KEY_DOWN){
+                direction = (struct Direction){0, 0};
                 if(event.key.key==SDLK_RIGHT){
+                    direction.dx = 1;
                     
-                    snake.x++;
                 }
                 if(event.key.key==SDLK_LEFT){
-                    snake.x--;
+                    direction.dx = -1;
+                   
                 }
                 if(event.key.key==SDLK_UP){
+                    direction.dy = -1;
                     snake.y--;
                 }
                 if(event.key.key==SDLK_DOWN){
+                    direction.dy = 1;
                     snake.y++;
                     
                 }
             }
         }
 
-        SDL_FillSurfaceRect(psurface,&override_rect,COLOR_BLACK); //
+        SDL_FillSurfaceRect(psurface,&override_rect,COLOR_BLACK);
+
+        move_snake(psnake, pdirection);
+        
         draw_snake(psurface, &snake);
         
         APPLE(apple_x, apple_y);
         DRAW_GRID;
         SDL_UpdateWindowSurface(window);
-        SDL_Delay(20);
+        SDL_Delay(200);
     }
 
     

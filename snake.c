@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<SDL3/SDL.h>
 
 #define WIDTH 900
@@ -33,6 +34,9 @@ struct Direction
     int dx,dy;
 };
 
+struct Apple{
+    int x, y;
+};
 
 //  funciton for the drawing grid
 int draw_grid(SDL_Surface *psurface){
@@ -76,6 +80,24 @@ void move_snake(struct SnakeElement *psnake,struct Direction *pdirection){
     psnake->y += pdirection->dy;
 }
 
+//  funciton to get new coords of apple once eaten by snake
+void reset_apple(struct SnakeElement *psnake ,struct Apple *papple){
+    papple->x = COLUMNS * ((double)rand() / RAND_MAX);
+    papple->y = ROWS * ((double)rand() / RAND_MAX);
+    //  if apple coords lies on snake body coords find new one
+    struct SnakeElement *pcurrent = psnake; 
+//  checking if new coord of apple lies on snake body or not recursively
+    do {
+        
+        if(pcurrent->x==papple->x && pcurrent->y==papple->y){
+            reset_apple(psnake, papple);
+            break;
+        }
+        pcurrent = pcurrent->pnext;
+
+    } while (pcurrent != NULL);
+}
+
 int main(){
     printf("Hello Snake\n");
 
@@ -90,14 +112,15 @@ int main(){
     struct SnakeElement *psnake = &snake; //pointer to snake
     struct Direction direction = {0, 0};
     struct Direction *pdirection = &direction; //pointer to directon
-
+    struct Apple apple;
+    struct Apple *papple = &apple;
+    reset_apple(psnake, papple); // make sure coord do not collide
     SDL_Rect override_rect = {0, 0, WIDTH, HEIGHT}; // it is for like if snake moves from one block to next then previous should get back to normal grid 
 
     //  writing game loop
     int game = 1;
   
-    int apple_x = 10;
-    int apple_y = 14;
+   
     while(game){
        
         while(SDL_PollEvent(&event)){
@@ -129,13 +152,18 @@ int main(){
         SDL_FillSurfaceRect(psurface,&override_rect,COLOR_BLACK);
 
         move_snake(psnake, pdirection);
-        
+        if(psnake->x==papple->x && psnake->y==papple->y){
+            reset_apple(psnake,papple);
+        }
+
+        APPLE(papple->x, papple->y);
+
         draw_snake(psurface, &snake);
         
-        APPLE(apple_x, apple_y);
+       
         DRAW_GRID;
         SDL_UpdateWindowSurface(window);
-        SDL_Delay(200);
+        SDL_Delay(300);
     }
 
     

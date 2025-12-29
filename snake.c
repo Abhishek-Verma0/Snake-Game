@@ -75,23 +75,35 @@ void draw_snake(SDL_Surface *psurface,struct SnakeElement *psnake){
 
 }
 
-void move_snake(struct SnakeElement *psnake, struct SnakeElement *presult, struct Direction *pdirection){
-    //  remove last element
-    struct SnakeElement *pcurrent;
-    while (pcurrent->pnext!=NULL)
-    {
-        pcurrent++;
+struct SnakeElement move_snake(struct SnakeElement *psnake,  struct Direction *pdirection){
+
+    if(psnake->pnext==NULL){
+      return  (struct SnakeElement){psnake->x + pdirection->dx,psnake->y + pdirection->dy,NULL};
+        
     }
-    if(sizeof(psnake)>1){
-        (pcurrent - 1)->pnext = NULL;
+    //  remove last element
+    struct SnakeElement *plast=psnake;
+    size_t num_elements = 0;
+    while (plast->pnext!=NULL)
+    {
+        plast=plast->pnext;
+        num_elements++;
+    }
+    if(num_elements>1){
+        struct SnakeElement *pBeforeLast=psnake;
+
+        while (pBeforeLast->pnext!=plast){
+            pBeforeLast = pBeforeLast->pnext;
+            pBeforeLast->pnext = NULL;
+        }
     }
     //create new head
     struct SnakeElement new_head = {psnake->x + pdirection->dx,psnake->y + pdirection->dy,psnake};
 
-    *presult = new_head;
+    return new_head;
 }
 
-//  funciton to get new coords of apple once eaten by snake
+//  function to get new coords of apple once eaten by snake
 void reset_apple(struct SnakeElement *psnake ,struct Apple *papple){
     papple->x = COLUMNS * ((double)rand() / RAND_MAX);
     papple->y = ROWS * ((double)rand() / RAND_MAX);
@@ -110,17 +122,16 @@ void reset_apple(struct SnakeElement *psnake ,struct Apple *papple){
 }
 
 
-// ***** funtion to add length to snake once it eats an apple
-void lengthen_snake(struct SnakeElement *psnake,struct SnakeElement *psnake_new, struct Direction *pdirection){
+// ***** function to add length to snake once it eats an apple
+struct SnakeElement lengthen_snake(struct SnakeElement *psnake, struct Direction *pdirection){
     struct SnakeElement new_head = {psnake->x + pdirection->dx,psnake->y + pdirection->dy,psnake}; //technically new snake
 
-    *psnake_new = new_head;
-
+    return new_head;
 }
 
 
 int main(){
-    printf("Hello Snake\n");
+   
 
     SDL_Init(SDL_INIT_VIDEO); // initialization for graphic lib
     SDL_Window* window= SDL_CreateWindow("Classic Snake", WIDTH, HEIGHT,0); // creating an window which opens in center of screen
@@ -131,8 +142,6 @@ int main(){
 
     struct SnakeElement snake = {5,5,NULL};
     struct SnakeElement *psnake = &snake; //pointer to snake
-    struct SnakeElement temp={0,0,NULL};
-    struct SnakeElement *ptemp= &temp;
     struct Direction direction = {0, 0};
     struct Direction *pdirection = &direction; //pointer to directon
     struct Apple apple;
@@ -173,19 +182,19 @@ int main(){
         }
 
         SDL_FillSurfaceRect(psurface,&override_rect,COLOR_BLACK);
-
-        move_snake(psnake,ptemp , pdirection);//********************* */
         
+      struct SnakeElement moved_snake= move_snake(psnake, pdirection);
+      struct SnakeElement *pmoved_snake = &moved_snake;
 
-        if(psnake->x==papple->x && psnake->y==papple->y){
-            reset_apple(psnake,papple);
-            
-            lengthen_snake(psnake, ptemp, pdirection);
-            
-        }
+      if (psnake->x == papple->x && psnake->y == papple->y)
+      {
+          reset_apple(psnake, papple);
+          moved_snake = lengthen_snake(pmoved_snake, pdirection);
+          pmoved_snake = &moved_snake;
+      }
 
         APPLE(papple->x, papple->y);
-        draw_snake(psurface, psnake);
+        draw_snake(psurface, pmoved_snake);
         DRAW_GRID;
         SDL_UpdateWindowSurface(window);
         SDL_Delay(300);

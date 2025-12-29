@@ -186,15 +186,21 @@ int main(){
       struct SnakeElement moved_snake= move_snake(psnake, pdirection);
       struct SnakeElement *pmoved_snake = &moved_snake;
 
-      if (psnake->x == papple->x && psnake->y == papple->y)
+      if (moved_snake.x == papple->x && moved_snake.y == papple->y)
       {
-          reset_apple(psnake, papple);
-          moved_snake = lengthen_snake(pmoved_snake, pdirection);
-          pmoved_snake = &moved_snake;
+          reset_apple(&moved_snake, papple);
+          struct SnakeElement lengthened_snake = lengthen_snake(&moved_snake, pdirection);
+          draw_snake(psurface, &lengthened_snake);
+
+          psnake = &lengthened_snake;
+        }
+        else{
+            
+            draw_snake(psurface, &moved_snake);
+            psnake = &moved_snake;
       }
 
         APPLE(papple->x, papple->y);
-        draw_snake(psurface, pmoved_snake);
         DRAW_GRID;
         SDL_UpdateWindowSurface(window);
         SDL_Delay(300);

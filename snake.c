@@ -75,7 +75,7 @@ void draw_snake(SDL_Surface *psurface,struct SnakeElement *psnake){
 
 }
 
-void move_snake(struct SnakeElement *psnake,struct Direction *pdirection){
+void move_snake(struct SnakeElement *psnake, struct SnakeElement *presult, struct Direction *pdirection){
     //  remove last element
     struct SnakeElement *pcurrent;
     while (pcurrent->pnext!=NULL)
@@ -85,9 +85,10 @@ void move_snake(struct SnakeElement *psnake,struct Direction *pdirection){
     if(sizeof(psnake)>1){
         (pcurrent - 1)->pnext = NULL;
     }
-    
-    psnake->x += pdirection->dx;
-    psnake->y += pdirection->dy;
+    //create new head
+    struct SnakeElement new_head = {psnake->x + pdirection->dx,psnake->y + pdirection->dy,psnake};
+
+    *presult = new_head;
 }
 
 //  funciton to get new coords of apple once eaten by snake
@@ -130,6 +131,8 @@ int main(){
 
     struct SnakeElement snake = {5,5,NULL};
     struct SnakeElement *psnake = &snake; //pointer to snake
+    struct SnakeElement temp={0,0,NULL};
+    struct SnakeElement *ptemp= &temp;
     struct Direction direction = {0, 0};
     struct Direction *pdirection = &direction; //pointer to directon
     struct Apple apple;
@@ -153,41 +156,36 @@ int main(){
                 direction = (struct Direction){0, 0};
                 if(event.key.key==SDLK_RIGHT){
                     direction.dx = 1;
-                   
-                                }
+                     }
                 if(event.key.key==SDLK_LEFT){
                     direction.dx = -1;
-                    
-                                }
+                    }
                 if(event.key.key==SDLK_UP){
                     direction.dy = -1;
-                  
                 }
                 if(event.key.key==SDLK_DOWN){
-                    direction.dy = 1;
-                  
-                    
+                    direction.dy = 1;  
                 }
             }
+        }
+        if(direction.dx==0 && direction.dy==0){
+            direction.dx = 1;
         }
 
         SDL_FillSurfaceRect(psurface,&override_rect,COLOR_BLACK);
 
-        move_snake(psnake, pdirection);
+        move_snake(psnake,ptemp , pdirection);//********************* */
+        
 
         if(psnake->x==papple->x && psnake->y==papple->y){
             reset_apple(psnake,papple);
-            struct SnakeElement temp;
-            struct SnakeElement *ptemp= &temp;
+            
             lengthen_snake(psnake, ptemp, pdirection);
-            psnake = ptemp;
+            
         }
 
         APPLE(papple->x, papple->y);
-
         draw_snake(psurface, psnake);
-        
-       
         DRAW_GRID;
         SDL_UpdateWindowSurface(window);
         SDL_Delay(300);

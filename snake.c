@@ -76,6 +76,16 @@ void draw_snake(SDL_Surface *psurface,struct SnakeElement *psnake){
 }
 
 void move_snake(struct SnakeElement *psnake,struct Direction *pdirection){
+    //  remove last element
+    struct SnakeElement *pcurrent;
+    while (pcurrent->pnext!=NULL)
+    {
+        pcurrent++;
+    }
+    if(sizeof(psnake)>1){
+        (pcurrent - 1)->pnext = NULL;
+    }
+    
     psnake->x += pdirection->dx;
     psnake->y += pdirection->dy;
 }
@@ -98,6 +108,16 @@ void reset_apple(struct SnakeElement *psnake ,struct Apple *papple){
     } while (pcurrent != NULL);
 }
 
+
+// ***** funtion to add length to snake once it eats an apple
+void lengthen_snake(struct SnakeElement *psnake,struct SnakeElement *psnake_new, struct Direction *pdirection){
+    struct SnakeElement new_head = {psnake->x + pdirection->dx,psnake->y + pdirection->dy,psnake}; //technically new snake
+
+    *psnake_new = new_head;
+
+}
+
+
 int main(){
     printf("Hello Snake\n");
 
@@ -108,13 +128,15 @@ int main(){
 
     SDL_Event event;
 
-    struct SnakeElement snake = {8,5,NULL};
+    struct SnakeElement snake = {5,5,NULL};
     struct SnakeElement *psnake = &snake; //pointer to snake
     struct Direction direction = {0, 0};
     struct Direction *pdirection = &direction; //pointer to directon
     struct Apple apple;
     struct Apple *papple = &apple;
     reset_apple(psnake, papple); // make sure coord do not collide
+
+
     SDL_Rect override_rect = {0, 0, WIDTH, HEIGHT}; // it is for like if snake moves from one block to next then previous should get back to normal grid 
 
     //  writing game loop
@@ -131,19 +153,19 @@ int main(){
                 direction = (struct Direction){0, 0};
                 if(event.key.key==SDLK_RIGHT){
                     direction.dx = 1;
-                    
-                }
+                   
+                                }
                 if(event.key.key==SDLK_LEFT){
                     direction.dx = -1;
-                   
-                }
+                    
+                                }
                 if(event.key.key==SDLK_UP){
                     direction.dy = -1;
-                    snake.y--;
+                  
                 }
                 if(event.key.key==SDLK_DOWN){
                     direction.dy = 1;
-                    snake.y++;
+                  
                     
                 }
             }
@@ -152,13 +174,18 @@ int main(){
         SDL_FillSurfaceRect(psurface,&override_rect,COLOR_BLACK);
 
         move_snake(psnake, pdirection);
+
         if(psnake->x==papple->x && psnake->y==papple->y){
             reset_apple(psnake,papple);
+            struct SnakeElement temp;
+            struct SnakeElement *ptemp= &temp;
+            lengthen_snake(psnake, ptemp, pdirection);
+            psnake = ptemp;
         }
 
         APPLE(papple->x, papple->y);
 
-        draw_snake(psurface, &snake);
+        draw_snake(psurface, psnake);
         
        
         DRAW_GRID;

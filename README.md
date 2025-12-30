@@ -54,7 +54,9 @@ This made the project more challenging, but also more educational.
 | Close window | Quit game |
 
 ---
+# Demo 
 
+./demo.mp4
 
 
 ---

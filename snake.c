@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<SDL3/SDL.h>
 #include<assert.h>
+#include<time.h>
 
 #define WIDTH 900
 #define HEIGHT 600
@@ -198,7 +199,7 @@ int  check_collision(struct SnakeElement **ppsnake){
 void free_snake(struct SnakeElement *psnake){
     while(psnake != NULL){
         struct SnakeElement *next = psnake->pnext;
-        free_snake(psnake);
+        free(psnake);
         psnake = next;
     }
 }
@@ -225,6 +226,8 @@ int main(){
     struct Direction *pdirection = &direction; //pointer to directon
     struct Apple apple;
     struct Apple *papple = &apple;
+    srand((unsigned)time(NULL));
+
     reset_apple(psnake, papple); // make sure coord do not collide
 
 

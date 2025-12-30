@@ -290,7 +290,7 @@ int main(){
         draw_snake(psurface, ppsnake);
         DRAW_GRID;
         SDL_UpdateWindowSurface(window);
-        SDL_Delay(300);
+        SDL_Delay(200);
     }
 
     

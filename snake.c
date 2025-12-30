@@ -86,7 +86,7 @@ void draw_snake(SDL_Surface *psurface,struct SnakeElement **ppsnake){
     assert(psurface != NULL);
     assert(ppsnake != NULL);
     assert(*ppsnake != NULL);
-    assert(snake_size(ppsnake)==3);
+  
     struct SnakeElement *psnake = *ppsnake;
     int debug_snake_size = 0;
     while(psnake!=NULL){
@@ -162,11 +162,13 @@ void reset_apple(struct SnakeElement *psnake ,struct Apple *papple){
 
 
 // ***** funtion to add length to snake once it eats an apple
-void lengthen_snake(struct SnakeElement **ppsnake){
-    
-    struct SnakeElement new_head
-    
+void lengthen_snake(struct SnakeElement **ppsnake,struct Direction *pdirection){
 
+    struct SnakeElement *head = malloc(sizeof(struct SnakeElement *));
+    head->x = (*ppsnake)->x + pdirection->dx;
+    head->y = (*ppsnake)->y + pdirection->dy;
+    head->pnext = *ppsnake;
+    *ppsnake = head;
 }
 
 
@@ -263,7 +265,7 @@ int main(){
         if(psnake->x==papple->x && psnake->y==papple->y){
             reset_apple(psnake,papple);
             
-            lengthen_snake(psnake, pdirection);
+            lengthen_snake(ppsnake, pdirection);
             
         }
 

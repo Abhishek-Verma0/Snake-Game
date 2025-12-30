@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<SDL3/SDL.h>
+#include<assert.h>
 
 #define WIDTH 900
 #define HEIGHT 600
@@ -75,35 +76,34 @@ void draw_snake(SDL_Surface *psurface,struct SnakeElement *psnake){
 
 }
 
-struct SnakeElement move_snake(struct SnakeElement *psnake,  struct Direction *pdirection){
+size_t snake_size(struct SnakeElement **ppsnake){
+    assert(ppsnake != NULL);
+    assert(*ppsnake != NULL);
+    size_t list_size = 1;
+    struct SnakeElement *current = *ppsnake;
 
-    if(psnake->pnext==NULL){
-      return  (struct SnakeElement){psnake->x + pdirection->dx,psnake->y + pdirection->dy,NULL};
-        
+    while (current->pnext != NULL){
+        assert(current->x > 0 && current->x < COLUMNS && current->y > 0 && current->y < ROWS);
+        current = current->pnext;
+        list_size++;
     }
-    //  remove last element
-    struct SnakeElement *plast=psnake;
-    size_t num_elements = 0;
-    while (plast->pnext!=NULL)
-    {
-        plast=plast->pnext;
-        num_elements++;
-    }
-    if(num_elements>1){
-        struct SnakeElement *pBeforeLast=psnake;
-
-        while (pBeforeLast->pnext!=plast){
-            pBeforeLast = pBeforeLast->pnext;
-            pBeforeLast->pnext = NULL;
-        }
-    }
-    //create new head
-    struct SnakeElement new_head = {psnake->x + pdirection->dx,psnake->y + pdirection->dy,psnake};
-
-    return new_head;
+    return list_size;
 }
 
-//  function to get new coords of apple once eaten by snake
+void move_snake(struct SnakeElement **ppsnake,  struct Direction *pdirection){
+    //  remove last element
+    assert(ppsnake != NULL);
+    assert(*ppsnake != NULL);
+    size_t size = snake_size(ppsnake);
+
+    if(size==1){
+
+        (*ppsnake)->x += pdirection->dx;
+        (*ppsnake)->y += pdirection->dy;
+    }
+}
+
+//  funciton to get new coords of apple once eaten by snake
 void reset_apple(struct SnakeElement *psnake ,struct Apple *papple){
     papple->x = COLUMNS * ((double)rand() / RAND_MAX);
     papple->y = ROWS * ((double)rand() / RAND_MAX);
@@ -122,16 +122,17 @@ void reset_apple(struct SnakeElement *psnake ,struct Apple *papple){
 }
 
 
-// ***** function to add length to snake once it eats an apple
-struct SnakeElement lengthen_snake(struct SnakeElement *psnake, struct Direction *pdirection){
+// ***** funtion to add length to snake once it eats an apple
+void lengthen_snake(struct SnakeElement *psnake, struct Direction *pdirection){
     struct SnakeElement new_head = {psnake->x + pdirection->dx,psnake->y + pdirection->dy,psnake}; //technically new snake
 
-    return new_head;
+    
+
 }
 
 
 int main(){
-   
+    printf("Hello Snake\n");
 
     SDL_Init(SDL_INIT_VIDEO); // initialization for graphic lib
     SDL_Window* window= SDL_CreateWindow("Classic Snake", WIDTH, HEIGHT,0); // creating an window which opens in center of screen
@@ -142,6 +143,7 @@ int main(){
 
     struct SnakeElement snake = {5,5,NULL};
     struct SnakeElement *psnake = &snake; //pointer to snake
+    struct SnakeElement **ppsnake = &psnake; //pointer to snake
     struct Direction direction = {0, 0};
     struct Direction *pdirection = &direction; //pointer to directon
     struct Apple apple;
@@ -182,25 +184,19 @@ int main(){
         }
 
         SDL_FillSurfaceRect(psurface,&override_rect,COLOR_BLACK);
+
+        move_snake(ppsnake,  pdirection);
         
-      struct SnakeElement moved_snake= move_snake(psnake, pdirection);
-      struct SnakeElement *pmoved_snake = &moved_snake;
 
-      if (moved_snake.x == papple->x && moved_snake.y == papple->y)
-      {
-          reset_apple(&moved_snake, papple);
-          struct SnakeElement lengthened_snake = lengthen_snake(&moved_snake, pdirection);
-          draw_snake(psurface, &lengthened_snake);
-
-          psnake = &lengthened_snake;
-        }
-        else{
+        if(psnake->x==papple->x && psnake->y==papple->y){
+            reset_apple(psnake,papple);
             
-            draw_snake(psurface, &moved_snake);
-            psnake = &moved_snake;
-      }
+            lengthen_snake(psnake, pdirection);
+            
+        }
 
         APPLE(papple->x, papple->y);
+        draw_snake(psurface, psnake);
         DRAW_GRID;
         SDL_UpdateWindowSurface(window);
         SDL_Delay(300);

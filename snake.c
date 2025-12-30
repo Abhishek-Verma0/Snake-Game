@@ -202,12 +202,12 @@ int main(){
     SDL_Surface *psurface = SDL_GetWindowSurface(window); //drawing on window
 
     SDL_Event event;
-    
+    // struct SnakeElement *psnake = malloc(sizeof(struct SnakeElement *));
     struct SnakeElement snake = {5,5,NULL};
-    struct SnakeElement snakeTail = {5, 6, NULL};
-    struct SnakeElement snakeTail2 = {5, 7, NULL};
-    snake.pnext = &snakeTail;
-    snakeTail.pnext = &snakeTail2;
+    // struct SnakeElement snakeTail = {5, 6, NULL};
+    // struct SnakeElement snakeTail2 = {5, 7, NULL};
+    // snake.pnext = &snakeTail;
+    // snakeTail.pnext = &snakeTail2;
     struct SnakeElement *psnake = &snake; //pointer to snake
     struct SnakeElement **ppsnake = &psnake; //pointer to snake
     struct Direction direction = {0, 0};
@@ -260,6 +260,16 @@ int main(){
 
         if(check_collision(ppsnake)){
             printf("Game Over\n");
+            
+            // free memory
+            struct SnakeElement *pcurrent = *ppsnake;
+            struct SnakeElement *pnext;
+            while(pcurrent->pnext!=NULL){
+                pnext = pcurrent->pnext;
+                free(pcurrent);
+
+            }
+            free(pnext);
             game = 0;
         }
 

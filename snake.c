@@ -66,34 +66,49 @@ void fill_cell(SDL_Surface* psurface, int x,int y,Uint32 color){
     SDL_FillSurfaceRect(psurface, &rect, color);
 }
 
-//  funciton to draw snake
-void draw_snake(SDL_Surface *psurface,struct SnakeElement *psnake){
-    if(psnake!=NULL){
-
-        SNAKE(psnake->x, psnake->y);
-        draw_snake(psurface, psnake->pnext);
-    }
-
-}
 
 size_t snake_size(struct SnakeElement **ppsnake){
     assert(ppsnake != NULL);
     assert(*ppsnake != NULL);
     size_t list_size = 1;
     struct SnakeElement *current = *ppsnake;
-
+    
     while (current->pnext != NULL){
-        assert(current->x > 0 && current->x < COLUMNS && current->y > 0 && current->y < ROWS);
+        assert(current->x >= 0 && current->x < COLUMNS && current->y >= 0 && current->y < ROWS);
         current = current->pnext;
         list_size++;
     }
     return list_size;
 }
 
+//  funciton to draw snake
+void draw_snake(SDL_Surface *psurface,struct SnakeElement **ppsnake){
+    assert(psurface != NULL);
+    assert(ppsnake != NULL);
+    assert(*ppsnake != NULL);
+    assert(snake_size(ppsnake)==3);
+    struct SnakeElement *psnake = *ppsnake;
+    int debug_snake_size = 0;
+    while(psnake!=NULL){
+        
+        SNAKE(psnake->x, psnake->y);
+        psnake = psnake->pnext;
+        debug_snake_size++;
+    }
+    assert(snake_size(ppsnake) == debug_snake_size);
+}
+
+
 void move_snake(struct SnakeElement **ppsnake,  struct Direction *pdirection){
     //  remove last element
     assert(ppsnake != NULL);
     assert(*ppsnake != NULL);
+   
+
+    if(pdirection->dx == 0 && pdirection->dy == 0)
+    {
+        return;
+    }
     size_t size = snake_size(ppsnake);
 
     if(size==1){
@@ -101,6 +116,30 @@ void move_snake(struct SnakeElement **ppsnake,  struct Direction *pdirection){
         (*ppsnake)->x += pdirection->dx;
         (*ppsnake)->y += pdirection->dy;
     }
+    else{
+        //  Append snake element at end of linked list
+        struct SnakeElement *pcurrent = *ppsnake;
+        int previous_x = pcurrent->x;
+        int previous_y = pcurrent->y;
+
+        pcurrent->x += pdirection->dx;
+        pcurrent->y += pdirection->dy;
+        
+        while(pcurrent->pnext!=NULL){
+
+            pcurrent = pcurrent->pnext;
+
+            int tmp_x = pcurrent->x;
+            int tmp_y = pcurrent->y;
+
+            pcurrent->x = previous_x;
+            pcurrent->y = previous_y;
+
+            previous_x = tmp_x;
+            previous_y = tmp_y;
+        }
+    }
+    printf("Snake size =%zu\n", size);
 }
 
 //  funciton to get new coords of apple once eaten by snake
@@ -140,8 +179,12 @@ int main(){
     SDL_Surface *psurface = SDL_GetWindowSurface(window); //drawing on window
 
     SDL_Event event;
-
+    
     struct SnakeElement snake = {5,5,NULL};
+    struct SnakeElement snakeTail = {5, 6, NULL};
+    struct SnakeElement snakeTail2 = {5, 7, NULL};
+    snake.pnext = &snakeTail;
+    snakeTail.pnext = &snakeTail2;
     struct SnakeElement *psnake = &snake; //pointer to snake
     struct SnakeElement **ppsnake = &psnake; //pointer to snake
     struct Direction direction = {0, 0};
@@ -155,8 +198,8 @@ int main(){
 
     //  writing game loop
     int game = 1;
-  
    
+
     while(game){
        
         while(SDL_PollEvent(&event)){
@@ -164,6 +207,7 @@ int main(){
                 game = 0;
             }
             if(event.type==SDL_EVENT_KEY_DOWN){
+               
                 direction = (struct Direction){0, 0};
                 if(event.key.key==SDLK_RIGHT){
                     direction.dx = 1;
@@ -178,10 +222,14 @@ int main(){
                     direction.dy = 1;  
                 }
             }
+            
         }
-        if(direction.dx==0 && direction.dy==0){
-            direction.dx = 1;
-        }
+
+
+
+        // if(direction.dx==0 && direction.dy==0){
+        //     direction.dx = 1;
+        // }
 
         SDL_FillSurfaceRect(psurface,&override_rect,COLOR_BLACK);
 
@@ -196,7 +244,7 @@ int main(){
         }
 
         APPLE(papple->x, papple->y);
-        draw_snake(psurface, psnake);
+        draw_snake(psurface, ppsnake);
         DRAW_GRID;
         SDL_UpdateWindowSurface(window);
         SDL_Delay(300);

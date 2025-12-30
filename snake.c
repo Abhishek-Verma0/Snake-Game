@@ -162,13 +162,33 @@ void reset_apple(struct SnakeElement *psnake ,struct Apple *papple){
 
 
 // ***** funtion to add length to snake once it eats an apple
-void lengthen_snake(struct SnakeElement *psnake, struct Direction *pdirection){
-    struct SnakeElement new_head = {psnake->x + pdirection->dx,psnake->y + pdirection->dy,psnake}; //technically new snake
-
+void lengthen_snake(struct SnakeElement **ppsnake){
+    
+    struct SnakeElement new_head
     
 
 }
 
+
+//  function to check the collison of snake
+
+int  check_collision(struct SnakeElement **ppsnake){
+    assert(ppsnake != NULL);
+    assert(*ppsnake != NULL);
+    struct SnakeElement snake = **ppsnake;
+    if(snake.x<0 ||snake.y <0 ||  snake.x >COLUMNS || snake.y >ROWS ){
+        return 1;
+    }
+    //  for self collision
+    struct SnakeElement *psnake = *ppsnake;
+    while(psnake->pnext!=NULL){
+        psnake = psnake->pnext;
+        if(snake.x== psnake->x && snake.y ==psnake->y){
+            return 1;
+        }
+    }
+    return 0;
+}
 
 int main(){
     printf("Hello Snake\n");
@@ -234,7 +254,11 @@ int main(){
         SDL_FillSurfaceRect(psurface,&override_rect,COLOR_BLACK);
 
         move_snake(ppsnake,  pdirection);
-        
+
+        if(check_collision(ppsnake)){
+            printf("Game Over\n");
+            game = 0;
+        }
 
         if(psnake->x==papple->x && psnake->y==papple->y){
             reset_apple(psnake,papple);

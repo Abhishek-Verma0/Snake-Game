@@ -165,7 +165,8 @@ void reset_apple(struct SnakeElement *psnake ,struct Apple *papple){
 // ***** funtion to add length to snake once it eats an apple
 void lengthen_snake(struct SnakeElement **ppsnake,struct Direction *pdirection){
 
-    struct SnakeElement *head = malloc(sizeof(struct SnakeElement *));
+    struct SnakeElement *head = malloc(sizeof(struct SnakeElement));
+
     head->x = (*ppsnake)->x + pdirection->dx;
     head->y = (*ppsnake)->y + pdirection->dy;
     head->pnext = *ppsnake;
@@ -192,6 +193,16 @@ int  check_collision(struct SnakeElement **ppsnake){
     }
     return 0;
 }
+
+
+void free_snake(struct SnakeElement *psnake){
+    while(psnake != NULL){
+        struct SnakeElement *next = psnake->pnext;
+        free_snake(psnake);
+        psnake = next;
+    }
+}
+
 
 int main(){
     printf("Hello Snake\n");
@@ -260,18 +271,10 @@ int main(){
 
         if(check_collision(ppsnake)){
             printf("Game Over\n");
-            
-            // free memory
-            struct SnakeElement *pcurrent = *ppsnake;
-            struct SnakeElement *pnext;
-            while(pcurrent->pnext!=NULL){
-                pnext = pcurrent->pnext;
-                free(pcurrent);
-
-            }
-            free(pnext);
+            free_snake(*ppsnake);
             game = 0;
-        }
+}
+
 
         if(psnake->x==papple->x && psnake->y==papple->y){
             reset_apple(psnake,papple);

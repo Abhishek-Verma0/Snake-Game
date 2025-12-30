@@ -99,6 +99,7 @@ void draw_snake(SDL_Surface *psurface,struct SnakeElement **ppsnake){
 }
 
 
+
 void move_snake(struct SnakeElement **ppsnake,  struct Direction *pdirection){
     //  remove last element
     assert(ppsnake != NULL);
